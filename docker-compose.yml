@@ -1,0 +1,51 @@
+name: ollama
+services:
+  ollama-api:
+    image: "ollama/ollama:latest"
+    container_name: ollama-api
+    hostname: ollama-api
+    restart: always
+    tty: true
+    expose:
+      - 11434
+    volumes:
+      - "/var/lib/srv/${USER}/docker/ollama/ollama/latest/rootfs/data/ollama:/root/.ollama"
+    devices:
+      - /dev/dri
+    networks:
+      - ollama
+      
+  ollama-comfy:
+    image: ai-dock/comfyui-pr
+    container_name: ollama-comfy
+    hostname: ollama-comfy
+    expose:
+      - 8188
+    environment:
+      - COMFYUI_ARGS=--cpu 
+    volumes:
+      - "/var/lib/srv/${USER}/docker/ollama/ollama/latest/rootfs/data/comfyui:/workspace/ComfyUI"
+    networks:
+      - ollama
+
+  ollama-ui:
+    image: "ghcr.io/open-webui/open-webui:main"
+    container_name: "ollama-ui" 
+    hostname: ollama-ui
+    restart: always
+    ports:
+      - 172.17.0.1:59042:8080
+    environment:
+      - OLLAMA_BASE_URL=http://ollama-api:11434
+    volumes:
+      - "/var/lib/srv/${USER}/docker/ollama/ollama/latest/rootfs/data/ui:/app/backend/data"
+    depends_on:
+      - ollama-api
+      - ollama-comfy
+    networks:
+      - ollama
+      
+networks:
+  ollama:
+    name: ollama
+    external: false
