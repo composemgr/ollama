@@ -6,6 +6,8 @@ services:
     hostname: ollama-api
     restart: always
     tty: true
+    environment:
+      - OLLAMA_INSTALL_MODELS=mistral,codegemma,codellama,llama2-uncensored,starcoder
     expose:
       - 11434
     volumes:
