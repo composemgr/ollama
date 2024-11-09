@@ -7,7 +7,7 @@ services:
     restart: always
     tty: true
     environment:
-      - OLLAMA_INSTALL_MODELS=mistral,codegemma,codellama,llama2-uncensored,starcoder
+      - OLLAMA_INSTALL_MODELS=ollama3.2,mistral,codegemma,codellama,llama2-uncensored,starcoder
     expose:
       - 11434
     volumes:
