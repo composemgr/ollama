@@ -1,0 +1,82 @@
+name: ollama
+services:
+  app:
+    image: 'ollama/ollama:latest'
+    container_name: ollama-app
+    hostname: ollama
+    restart: always
+    tty: true
+    environment:
+      - OLLAMA_MODELS=/data/models
+    expose:
+      - 11434
+    volumes:
+      - /var/lib/srv/${USER}/docker/ollama/ollama/latest/rootfs/data/models:/data/models
+      - /var/lib/srv/${USER}/docker/ollama/ollama/latest/rootfs/data/ollama:/root/.ollama
+    devices:
+      - /dev/dri
+    networks:
+      - ollama
+
+  # diffusion:
+  # image: ghcr.io/autonomous-ai/stable-diffusion-webui:latest
+  # container_name: ollama-diffusion
+  # hostname: diffusion
+  # restart: always
+  # tty: true
+  # environment:
+  # - FORCE_CPU=True
+  # - CLI_ARGS=--share
+  # expose:
+  # - 7860
+  # volumes:
+  # - /var/lib/srv/${USER}/docker/ollama/ollama/latest/rootfs/data/models:/app/models
+  # - /var/lib/srv/${USER}/docker/ollama/ollama/latest/rootfs/data/diffusion:/app/data
+  # devices:
+  # - /dev/dri
+  # networks:
+  # - ollama
+
+  comfy:
+    image: 'ghcr.io/ai-dock/comfyui:v2-cpu-22.04-v0.2.7'
+    container_name: ollama-comfy
+    hostname: comfy
+    environment:
+      - COMFYUI_ARGS=--cpu
+      - WEB_ENABLE_AUTH=false
+      - CF_QUICK_TUNNELS=false
+      - USE_PERSISTENT_DATA=true
+      - DIRECT_ADDRESS_GET_WAN=true
+    expose:
+      - 8188
+    volumes:
+      - /var/lib/srv/${USER}/docker/ollama/ollama/latest/rootfs/data/comfy:/workspace
+      - /var/lib/srv/${USER}/docker/ollama/ollama/latest/rootfs/data/models:/app/models
+    devices:
+      - /dev/dri
+    networks:
+      - ollama
+
+  ui:
+    image: 'ghcr.io/open-webui/open-webui:main'
+    container_name: 'ollama-ui'
+    hostname: ui
+    restart: always
+    environment:
+      - ANONYMIZED_TELEMETRY=true
+      - OLLAMA_BASE_URL=http://ollama-app:11434
+    ports:
+      - 172.17.0.1:59042:8080
+    volumes:
+      - /var/lib/srv/${USER}/docker/ollama/ollama/latest/rootfs/data/ui:/app/backend/data
+    depends_on:
+      - app
+      - comfy
+      - diffusion
+    networks:
+      - ollama
+
+networks:
+  ollama:
+    name: ollama
+    external: false
