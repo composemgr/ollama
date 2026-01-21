@@ -1,0 +1,80 @@
+# nginx proxy address - http://172.17.0.1:59042
+
+name: ollama
+x-logging: &default-logging
+  options:
+    max-size: '5m'
+    max-file: '1'
+  driver: json-file
+
+services:
+  ui:
+    image: 'ghcr.io/open-webui/open-webui:main'
+    container_name: ollama-ui
+    hostname: ollama-ui
+    restart: always
+    pull_policy: always
+    logging: *default-logging
+    environment:
+      TZ: ${TZ:-America/New_York}
+      ANONYMIZED_TELEMETRY: true
+      OLLAMA_BASE_URL: http://ollama-app:11434
+    ports:
+      - 172.17.0.1:59042:8080
+    volumes:
+      - './rootfs/data/ui:/app/backend/data'
+    depends_on:
+      - app
+      - comfy
+    networks:
+      - ollama
+
+  app:
+    image: 'ollama/ollama:latest'
+    container_name: ollama-app
+    hostname: ollama-app
+    restart: always
+    pull_policy: always
+    tty: true
+    logging: *default-logging
+    environment:
+      TZ: ${TZ:-America/New_York}
+      OLLAMA_MODELS: /data/models
+    expose:
+      - 11434
+    volumes:
+      - './rootfs/data/models:/data/models'
+      - './rootfs/data/ollama:/root/.ollama'
+    devices:
+      - /dev/dri
+    networks:
+      - ollama
+
+  comfy:
+    image: 'ghcr.io/ai-dock/comfyui:v2-cpu-22.04-v0.2.7'
+    container_name: ollama-comfy
+    hostname: ollama-comfy
+    restart: always
+    pull_policy: always
+    logging: *default-logging
+    environment:
+      TZ: ${TZ:-America/New_York}
+      COMFYUI_ARGS: --cpu
+      WEB_ENABLE_AUTH: false
+      CF_QUICK_TUNNELS: false
+      USE_PERSISTENT_DATA: true
+      DIRECT_ADDRESS_GET_WAN: true
+    expose:
+      - 8188
+    volumes:
+      - './rootfs/data/comfy:/workspace'
+      - './rootfs/data/models:/app/models'
+    devices:
+      - /dev/dri
+    networks:
+      - ollama
+
+networks:
+  ollama:
+    name: ollama
+    external: false
