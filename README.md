@@ -47,10 +47,10 @@ See `docker-compose.yaml` for complete list of configurable options.
 
 ## 📂 Volumes
 
-- `./rootfs/data/ui` - Data storage
-- `./rootfs/data/models` - Data storage
-- `./rootfs/data/ollama` - Data storage
-- `./rootfs/data/comfy` - Data storage
+- `./volumes/data/ui` - Data storage
+- `./volumes/data/models` - Data storage
+- `./volumes/data/ollama` - Data storage
+- `./volumes/data/comfy` - Data storage
 
 ## 🔍 Logging
 
