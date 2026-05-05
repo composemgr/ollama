@@ -22,7 +22,7 @@ services:
     ports:
       - 172.17.0.1:59042:8080
     volumes:
-      - './rootfs/data/ui:/app/backend/data'
+      - './volumes/data/ui:/app/backend/data'
     depends_on:
       - app
       - comfy
@@ -43,8 +43,8 @@ services:
     expose:
       - 11434
     volumes:
-      - './rootfs/data/models:/data/models'
-      - './rootfs/data/ollama:/root/.ollama'
+      - './volumes/data/models:/data/models'
+      - './volumes/data/ollama:/root/.ollama'
     devices:
       - /dev/dri
     networks:
@@ -67,8 +67,8 @@ services:
     expose:
       - 8188
     volumes:
-      - './rootfs/data/comfy:/workspace'
-      - './rootfs/data/models:/app/models'
+      - './volumes/data/comfy:/workspace'
+      - './volumes/data/models:/app/models'
     devices:
       - /dev/dri
     networks:
