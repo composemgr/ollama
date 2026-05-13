@@ -17,8 +17,10 @@ services:
     logging: *default-logging
     environment:
       TZ: ${TZ:-America/New_York}
-      ANONYMIZED_TELEMETRY: true
+      ANONYMIZED_TELEMETRY: "false"
       OLLAMA_BASE_URL: http://ollama-app:11434
+      WEBUI_SECRET_KEY: ${APP_SECRET_KEY:-changeme_secret_key_min_32_chars}
+      WEBUI_NAME: ${BASE_HOST_NAME:-$HOSTNAME}
     ports:
       - 172.17.0.1:59042:8080
     volumes:
@@ -51,7 +53,7 @@ services:
       - ollama
 
   comfy:
-    image: 'ghcr.io/ai-dock/comfyui:v2-cpu-22.04-v0.2.7'
+    image: 'ghcr.io/ai-dock/comfyui:latest'
     container_name: ollama-comfy
     hostname: ollama-comfy
     restart: always
@@ -60,10 +62,10 @@ services:
     environment:
       TZ: ${TZ:-America/New_York}
       COMFYUI_ARGS: --cpu
-      WEB_ENABLE_AUTH: false
-      CF_QUICK_TUNNELS: false
-      USE_PERSISTENT_DATA: true
-      DIRECT_ADDRESS_GET_WAN: true
+      WEB_ENABLE_AUTH: "false"
+      CF_QUICK_TUNNELS: "false"
+      USE_PERSISTENT_DATA: "true"
+      DIRECT_ADDRESS_GET_WAN: "true"
     expose:
       - 8188
     volumes:
