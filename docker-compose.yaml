@@ -21,6 +21,8 @@ services:
       OLLAMA_BASE_URL: http://ollama-app:11434
       WEBUI_SECRET_KEY: ${APP_SECRET_KEY:-changeme_secret_key_min_32_chars}
       WEBUI_NAME: ${BASE_HOST_NAME:-$HOSTNAME}
+      CONTAINER_NAME: ollama-ui
+      HOSTNAME: ${BASE_HOST_NAME:-$HOSTNAME}
     ports:
       - 172.17.0.1:59042:8080
     volumes:
@@ -30,6 +32,24 @@ services:
       - comfy
     networks:
       - ollama
+      - proxy
+      - cloudflare
+    labels:
+      - 'traefik.enable=true'
+      - 'cloudflare.enable=true'
+      - 'traefik.docker.network=proxy'
+      - 'cloudflare.service=http://ollama-ui:8080'
+      - 'cloudflare.hostname=ollama.${CLOUDFLARE_ZONE_NAME:-}'
+      - 'traefik.http.routers.ollama-ui.entrypoints=http'
+      - 'traefik.http.routers.ollama-ui-secure.tls=true'
+      - 'traefik.http.routers.ollama-ui.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
+      - 'traefik.http.middlewares.ollama-ui-https-redirect.redirectscheme.scheme=https'
+      - 'traefik.http.routers.ollama-ui.middlewares=ollama-ui-https-redirect'
+      - 'traefik.http.routers.ollama-ui-secure.entrypoints=https'
+      - 'traefik.http.routers.ollama-ui-secure.rule=Host($(${BASE_HOST_NAME:-$HOSTNAME}))'
+      - 'traefik.http.routers.ollama-ui-secure.tls.certresolver=cloudflare'
+      - 'traefik.http.routers.ollama-ui-secure.service=ollama-ui'
+      - 'traefik.http.services.ollama-ui.loadbalancer.server.port=8080'
 
   app:
     image: 'ollama/ollama:latest'
@@ -42,6 +62,7 @@ services:
     environment:
       TZ: ${TZ:-America/New_York}
       OLLAMA_MODELS: /data/models
+      CONTAINER_NAME: ollama-app
     expose:
       - 11434
     volumes:
@@ -66,6 +87,7 @@ services:
       CF_QUICK_TUNNELS: "false"
       USE_PERSISTENT_DATA: "true"
       DIRECT_ADDRESS_GET_WAN: "true"
+      CONTAINER_NAME: ollama-comfy
     expose:
       - 8188
     volumes:
@@ -80,3 +102,7 @@ networks:
   ollama:
     name: ollama
     external: false
+  proxy:
+    external: true
+  cloudflare:
+    external: true
